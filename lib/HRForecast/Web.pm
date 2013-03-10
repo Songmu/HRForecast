@@ -24,7 +24,20 @@ sub data {
 sub calc_term {
     my $self = shift;
     my ($term, $from, $to) = @_;
-    if ( $term eq 'w' ) {
+
+    if ( $term eq 'h' ) {
+        $from = time - 3600;
+        $to = time;
+    }
+    elsif ( $term eq 'hd' ) {
+        $from = time - 3600 * 12;
+        $to = time;
+    }
+    elsif ( $term eq 'd' ) {
+        $from = time - 86400 * 1;
+        $to = time;
+    }
+    elsif ( $term eq 'w' ) {
         $from = time - 86400 * 10;
         $to = time;
     }
@@ -111,9 +124,9 @@ get '/docs' => [qw/sidebar/] => sub {
 
 my $metrics_validator = [
     't' => {
-        default => 'm',
+        default => 'hd',
         rule => [
-            [['CHOICE',qw/w m y c/],'invalid browse term'],
+            [['CHOICE',qw/w m y c d h hd/],'invalid browse term'],
         ],
     },
     'from' => {
