@@ -53,8 +53,8 @@ sub calc_term {
         $from = HTTP::Date::str2time($from);
         $to = HTTP::Date::str2time($to);
     }
-    $from = localtime($from - ($from % $self->data->round_interval_sec));
-    $to = localtime($to - ($to % $self->data->round_interval_sec));
+    $from = localtime($from - ($from % $self->data->interval_sec));
+    $to = localtime($to - ($to % $self->data->interval_sec));
     return ($from,$to);
 }
 
