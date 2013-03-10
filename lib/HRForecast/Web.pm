@@ -572,9 +572,9 @@ post '/api/:service_name/:section_name/:graph_name' => sub {
             ],
         },
         'datetime' => {
+            default => HTTP::Date::time2str(),
             rule => [
-                ['NOT_NULL','datetime is null'],
-                [ sub { HTTP::Date::str2time($_[1]) } ,'datetime is not null']                
+                [ sub { HTTP::Date::str2time($_[1]) } ,'datetime is invalid'],
             ],
         },
     ]);
