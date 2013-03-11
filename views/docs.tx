@@ -127,10 +127,13 @@ $ curl -F number=10 -F datetime=20120206T09:41:31 <: $c.req.uri_for('/') :>api/n
 <tr>
 <td>t</td>
 <td>グラフの表示範囲<br />
-w => 1週間<br />
-m => 1ヶ月<br />
-y => 1年<br />
-c => 指定<br />
+h  => 1時間<br />
+hd => 半日<br />
+d  => 1日<br />
+w  => 1週間<br />
+m  => 1ヶ月<br />
+y  => 1年<br />
+c  => 指定<br />
 </td>
 <td>オプション。デフォルトは「m」</td>
 </tr>
