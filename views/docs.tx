@@ -13,7 +13,7 @@
 <: $c.req.uri_for('/') :>api/:service_name/:section_name/:graph_name
 </pre>
 
-<p>HRForecast は、多数のサービスで利用可能な共通 Web Graph API を目標として作られています。 URL 中の各名前に関しては下の表を参考にしてください。</p>
+<p>ContinuousForecast は、多数のサービスで利用可能な共通 Web Graph API を目標として作られています。 URL 中の各名前に関しては下の表を参考にしてください。</p>
 
 <table class="table">
 <tr>

@@ -1,4 +1,4 @@
-package HRForecast::Data;
+package ContinuousForecast::Data;
 
 
 use strict;
@@ -27,14 +27,14 @@ sub dbh {
     my $self = shift;
     local $Scope::Container::DBI::DBI_CLASS = 'DBIx::Sunny';    
     Scope::Container::DBI->connect(
-        HRForecast->config->{dsn},
-        HRForecast->config->{username},
-        HRForecast->config->{password}
+        ContinuousForecast->config->{dsn},
+        ContinuousForecast->config->{username},
+        ContinuousForecast->config->{password}
     );
 }
 
 sub round_interval {
-    HRForecast->config->{round_interval} || 3600;
+    ContinuousForecast->config->{round_interval} || 3600;
 }
 
 sub inflate_row {

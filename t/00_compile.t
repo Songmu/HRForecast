@@ -3,8 +3,8 @@ use warnings;
 use Test::More;
 
 use_ok $_ for qw(
-    HRForecast
-    HRForecast::Web
+    ContinuousForecast
+    ContinuousForecast::Web
 );
 
 done_testing;

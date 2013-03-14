@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
 <link rel="shortcut icon" href="<: $c.req.uri_for('/favicon.ico',[v=>2]) :>" type="image/vnd.microsoft.icon" />
 <link rel="stylesheet" href="<: $c.req.uri_for('/css/bootstrap.min.css') :>">
-<title>HRForecast</title>
+<title>ContinuousForecast</title>
 <style type="text/css">
 body {
   padding-top: 60px;
@@ -37,7 +37,7 @@ body {
 <span class="icon-bar"></span>
 <span class="icon-bar"></span>
 </a>
-<a class="brand" href="<: $c.req.uri_for('/') :>">HRForecast</a>
+<a class="brand" href="<: $c.req.uri_for('/') :>">ContinuousForecast</a>
 <div class="nav-collapse">
 <ul class="nav">
 <li><a href="<: $c.req.uri_for('/') :>">ホーム</a></li>

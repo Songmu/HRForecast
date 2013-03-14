@@ -11,7 +11,7 @@ body {
 }
 </style>
 <link rel="stylesheet" href="<: $c.req.uri_for('/css/site.css') :>">
-<title>HRForecast</title>
+<title>ContinuousForecast</title>
 </head>
 <body>
 

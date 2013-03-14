@@ -12,8 +12,8 @@ use Plack::Loader;
 use Plack::Builder;
 use Plack::Builder::Conditionals;
 use Log::Minimal;
-use HRForecast;
-use HRForecast::Web;
+use ContinuousForecast;
+use ContinuousForecast::Web;
 
 $Log::Minimal::AUTODUMP = 1;
 
@@ -41,11 +41,11 @@ my $host = $config->{host} || 0;
 my @front_proxy = exists $config->{front_proxy} ? @{$config->{front_proxy}} : ();
 my @allow_from = exists $config->{allow_from} ? @{$config->{allow_from}} : ();
 
-local $HRForecast::CONFIG = $config;
+local $ContinuousForecast::CONFIG = $config;
 debugf('dump config:%s',$config);
 
 my $root_dir = File::Basename::dirname(__FILE__);
-my $app = HRForecast::Web->psgi($root_dir);
+my $app = ContinuousForecast::Web->psgi($root_dir);
 $app = builder {
     enable 'Lint';
     enable 'StackTrace';

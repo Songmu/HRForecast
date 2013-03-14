@@ -1,8 +1,8 @@
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME          => 'HRForecast',
-    VERSION_FROM  => 'lib/HRForecast.pm',
+    NAME          => 'ContinuousForecast',
+    VERSION_FROM  => 'lib/ContinuousForecast.pm',
     PREREQ_PM     => {
         'Kossy' =>  '0.14',
         'DBIx::Sunny' =>  '0.14',

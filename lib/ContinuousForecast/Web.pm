@@ -1,4 +1,4 @@
-package HRForecast::Web;
+package ContinuousForecast::Web;
 
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use utf8;
 use Kossy;
 use HTTP::Date;
 use Time::Piece;
-use HRForecast::Data;
+use ContinuousForecast::Data;
 use Log::Minimal;
 use JSON qw//;
 
@@ -17,7 +17,7 @@ sub encode_json {
 
 sub data {
     my $self = shift;
-    $self->{__data} ||= HRForecast::Data->new();
+    $self->{__data} ||= ContinuousForecast::Data->new();
     $self->{__data};
 }
 

@@ -1,4 +1,4 @@
-package HRForecast;
+package ContinuousForecast;
 
 use strict;
 use warnings;
