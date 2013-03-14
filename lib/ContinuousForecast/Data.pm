@@ -114,11 +114,11 @@ sub update {
     }
     $dbh->commit;
 
-    my $row = $dbh->select_one(
+    my $data = $dbh->select_one(
         'SELECT MAX(sequence) max_seqence FROM data WHERE metrics_id = ?',
         $metrics->{id},
     );
-    my $next_seqence = $row ? $row->[0] + 1 : 1;
+    my $next_seqence = $data ? $data + 1 : 1;
 
     $dbh->query(
         'INSERT INTO data SET metrics_id = ?, sequence = ?, number = ?',

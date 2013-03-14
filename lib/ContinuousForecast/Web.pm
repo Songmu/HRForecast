@@ -31,28 +31,8 @@ sub calc_term {
     my $offset = $args{offset};
     my $period = $args{period};
 
-    if ( $term eq 'w' ) {
-        $from = time - 86400 * 10;
-        $to = time;
-    }
-    elsif ( $term eq 'm' ) {
-        $from = time - 86400 * 40;
-        $to = time;
-    }
-    elsif ( $term eq 'y' ) {
-        $from = time - 86400 * 400;
-        $to = time;
-    }
-    elsif ( $term eq 'range' ) {
-        $to = time - $offset;
-        $from = $to - $period;
-    }
-    else {
-        $from = HTTP::Date::str2time($from);
-        $to = HTTP::Date::str2time($to);
-    }
-    $from = localtime($from - ($from % $self->data->round_interval));
-    $to = localtime($to - ($to % $self->data->round_interval));
+    $from = 1;
+    $to =  20;
     return ($from,$to);
 }
 
@@ -187,10 +167,9 @@ get '/list/:service_name/:section_name' => [qw/sidebar/] => sub {
         $c->args->{service_name}, $c->args->{section_name}
     );
     my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
-    $c->render('list.tx',{ 
+    $c->render('list.tx',{
         metricses => $rows, valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from->strftime('%Y/%m/%d %T'), 
-                                    $to->strftime('%Y/%m/%d %T')]),
+        date_window => encode_json([$from, $to]),
     });
 };
 
@@ -201,8 +180,7 @@ get '/view/:service_name/:section_name/:graph_name' => [qw/sidebar get_metrics/]
     $c->render('list.tx', {
         metricses => [$c->stash->{metrics}],
         valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from->strftime('%Y/%m/%d %T'), 
-                                    $to->strftime('%Y/%m/%d %T')]),        
+        date_window => encode_json([$from, $to]),
     });
 };
 
@@ -213,8 +191,7 @@ get '/view_complex/:service_name/:section_name/:graph_name' => [qw/sidebar get_c
     $c->render('list.tx', {
         metricses => [$c->stash->{metrics}],
         valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from->strftime('%Y/%m/%d %T'), 
-                                    $to->strftime('%Y/%m/%d %T')]),        
+        date_window => encode_json([$from, $to]),
     });
 };
 
@@ -225,8 +202,7 @@ get '/ifr/:service_name/:section_name/:graph_name' => [qw/get_metrics/] => sub {
     $c->render('ifr.tx', {
         metrics => $c->stash->{metrics},
         valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from->strftime('%Y/%m/%d %T'), 
-                                    $to->strftime('%Y/%m/%d %T')]),        
+        date_window => encode_json([$from, $to]),
     });
 };
 
@@ -237,8 +213,7 @@ get '/ifr_complex/:service_name/:section_name/:graph_name' => [qw/get_complex/] 
     $c->render('ifr_complex.tx', {
         metrics => $c->stash->{metrics},
         valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from->strftime('%Y/%m/%d %T'), 
-                                    $to->strftime('%Y/%m/%d %T')]),        
+        date_window => encode_json([$from, $to]),
     });
 };
 
@@ -263,8 +238,7 @@ get '/ifr/preview/:complex' => sub {
         complex => $c->args->{complex},
         valid => $result, metrics_params => _build_metrics_params($result),
         colors => encode_json(\@colors),
-        date_window => encode_json([$from->strftime('%Y/%m/%d %T'), 
-                                    $to->strftime('%Y/%m/%d %T')]),        
+        date_window => encode_json([$from, $to]),
     });
 };
 
