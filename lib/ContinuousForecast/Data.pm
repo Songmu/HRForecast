@@ -25,16 +25,12 @@ sub new {
 
 sub dbh {
     my $self = shift;
-    local $Scope::Container::DBI::DBI_CLASS = 'DBIx::Sunny';    
+    local $Scope::Container::DBI::DBI_CLASS = 'DBIx::Sunny';
     Scope::Container::DBI->connect(
         ContinuousForecast->config->{dsn},
         ContinuousForecast->config->{username},
         ContinuousForecast->config->{password}
     );
-}
-
-sub round_interval {
-    ContinuousForecast->config->{round_interval} || 3600;
 }
 
 sub inflate_row {
@@ -52,7 +48,6 @@ sub inflate_row {
 
 sub inflate_data_row {
     my ($self, $row) = @_;
-    $row->{datetime} = Time::Piece->from_mysql_datetime($row->{datetime});
     $row->{updated_at} = Time::Piece->from_mysql_timestamp($row->{updated_at});
     my %result = (
         %$row
@@ -111,7 +106,7 @@ sub update {
         my $color = '#' . join('', splice(@colors,0,3));
         my $meta = encode_json({ color => $color });
         $dbh->query(
-            'INSERT INTO metrics (service_name, section_name, graph_name, meta, created_at) 
+            'INSERT INTO metrics (service_name, section_name, graph_name, meta, created_at)
                          VALUES (?,?,?,?,NOW())',
             $service, $section, $graph, $meta
         );
@@ -119,12 +114,16 @@ sub update {
     }
     $dbh->commit;
 
-    my $fixed_timestamp = $timestamp - ($timestamp % $self->round_interval);
-    $dbh->query(
-        'REPLACE data SET metrics_id = ?, datetime = ?, number = ?',
-        $metrics->{id}, localtime($fixed_timestamp)->mysql_datetime, $number
+    my $row = $dbh->select_one(
+        'SELECT MAX(sequence) max_seqence FROM data WHERE metrics_id = ?'
+        $metrics->{id},
     );
+    my $next_seqence = $row ? $row->[0] + 1 : 1;
 
+    $dbh->query(
+        'INSERT INTO data SET metrics_id = ?, sequence = ?, number = ?',
+        $metrics->{id}, $next_seqence, $number
+    );
     1;
 }
 
@@ -158,17 +157,14 @@ sub get_data {
     my ($self, $id, $from, $to) = @_;
     my @id = ref $id ? @$id : ($id);
     my $rows = $self->dbh->select_all(
-        'SELECT * FROM data WHERE metrics_id IN (?) AND (datetime BETWEEN ? AND ?) ORDER BY datetime ASC',
-        \@id, localtime($from)->mysql_datetime, localtime($to)->mysql_datetime
+        'SELECT * FROM data WHERE metrics_id IN (?) AND (sequence BETWEEN ? AND ?) ORDER BY sequence ASC',
+        \@id, $from, $to
     );
     my @ret;
     for my $row ( @$rows ) {
-        push @ret, $self->inflate_data_row($row); 
+        push @ret, $self->inflate_data_row($row);
     }
-    return \@ret, {
-        from => Time::Piece->new($from),
-        to => Time::Piece->new($to),
-    };
+    return \@ret;
 }
 
 
@@ -197,7 +193,7 @@ sub get_sections {
     );
     my @names = uniq map { $_->{section_name} } (@$rows,@$complex_rows);
     \@names;
-} 
+}
 
 
 sub get_metricses {
@@ -213,10 +209,10 @@ sub get_metricses {
    );
    my @ret;
    for my $row ( @$rows ) {
-       push @ret, $self->inflate_row($row); 
+       push @ret, $self->inflate_row($row);
    }
    for my $row ( @$complex_rows ) {
-       push @ret, $self->inflate_complex_row($row); 
+       push @ret, $self->inflate_complex_row($row);
    }
    @ret = sort { $b->{sort} <=> $a->{sort} } @ret;
    \@ret;
@@ -254,10 +250,10 @@ sub create_complex {
     my @update = map { delete $args->{$_} } qw/sort/;
     my $meta = encode_json($args);
     $self->dbh->query(
-        'INSERT INTO complex (service_name, section_name, graph_name, sort, meta,  created_at) 
+        'INSERT INTO complex (service_name, section_name, graph_name, sort, meta,  created_at)
                          VALUES (?,?,?,?,?,NOW())',
         $service, $section, $graph, @update, $meta
-    ); 
+    );
     $self->get_complex($service, $section, $graph);
 }
 

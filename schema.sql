@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS metrics (
 
 CREATE TABLE IF NOT EXISTS data (
     metrics_id    INT UNSIGNED NOT NULL,
-    datetime     DATETIME NOT NULL,
+    sequence     INT NOT NULL,
     number       BIGINT NOT NULL,
     updated_at   TIMESTAMP NOT NULL,
-    PRIMARY KEY (metrics_id, datetime),
-    KEY (datetime)
+    PRIMARY KEY (metrics_id, sequence),
+    KEY (sequence)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS complex (
