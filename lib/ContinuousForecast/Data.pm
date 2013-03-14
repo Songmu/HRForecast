@@ -97,7 +97,7 @@ sub get_by_id {
 }
 
 sub update {
-    my ($self, $service, $section, $graph, $number, $timestamp ) = @_;
+    my ($self, $service, $section, $graph, $number ) = @_;
     my $dbh = $self->dbh;
     $dbh->begin_work;
     my $metrics = $self->get($service, $section, $graph);
@@ -115,7 +115,7 @@ sub update {
     $dbh->commit;
 
     my $row = $dbh->select_one(
-        'SELECT MAX(sequence) max_seqence FROM data WHERE metrics_id = ?'
+        'SELECT MAX(sequence) max_seqence FROM data WHERE metrics_id = ?',
         $metrics->{id},
     );
     my $next_seqence = $row ? $row->[0] + 1 : 1;

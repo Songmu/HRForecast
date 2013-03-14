@@ -128,9 +128,9 @@ my $metrics_validator = [
         ],
     },
     'from' => {
-        default => sub { localtime(time-86400*35)->strftime('%Y/%m/%d %T') },
+        default => 0,
         rule => [
-            [sub{ HTTP::Date::str2time($_[1]) }, 'invalid From datetime'],
+            ['UINT', 'invalid from'],
         ],
     },
     'period' => {
@@ -146,9 +146,9 @@ my $metrics_validator = [
         ],
     },
     'to' => {
-        default => sub { localtime()->strftime('%Y/%m/%d %T') },
+        default => 0,
         rule => [
-            [sub{ HTTP::Date::str2time($_[1]) }, 'invalid To datetime'],
+            ['UINT', 'invalid to'],
         ],
     },
     'd' => {
@@ -530,7 +530,7 @@ get '/csv/:service_name/:section_name/:graph_name' => [qw/get_metrics/] => sub {
     );
     my $csv = sprintf("Date,/%s/%s/%s\n",$c->stash->{metrics}->{service_name},$c->stash->{metrics}->{section_name},$c->stash->{metrics}->{graph_name});
     foreach my $row ( @$rows ) {
-        $csv .= sprintf "%s,%d\n", $row->{datetime}->strftime('%Y/%m/%d %T'), $row->{number}
+        $csv .= sprintf "%s,%d\n", $row->{sequence}, $row->{number}
     }
     if ( $result->valid('d') ) {
         $c->res->header('Content-Disposition',
@@ -572,17 +572,15 @@ my $complex_csv =  sub {
 
     my %date_group;
     foreach my $row ( @$rows ) {
-        my $datetime = $row->{datetime}->strftime('%Y%m%d%H%M%S');
-        $date_group{$datetime} ||= {};
-        $date_group{$datetime}->{$row->{metrics_id}} = $row->{number};
+        my $sequence = $row->{sequence};
+        $date_group{$sequence} ||= {};
+        $date_group{$sequence}{$row->{metrics_id}} = $row->{number};
     }
 
     my $csv = sprintf("Date,%s\n", join ",", map { '/'.$_->{service_name}.'/'.$_->{section_name}.'/'.$_->{graph_name} } @data);
     foreach my $key ( sort keys %date_group ) {
-        $key =~ m!^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$!;
-        my $datetime = sprintf "%s/%s/%s %s:%s:%s", $1, $2, $3, $4, $5, $6;
         my $csv_data = join ",", map { exists $date_group{$key}->{$_} ? $date_group{$key}->{$_} : '' } @id;
-        $csv .= "$datetime,$csv_data\n";
+        $csv .= "$key,$csv_data\n";
     }
 
     if ( $result->valid('d') ) {
@@ -594,7 +592,7 @@ my $complex_csv =  sub {
         $c->res->content_type('text/plain');
     }
     $c->res->body($csv);
-    $c->res;    
+    $c->res;
 };
 
 get '/csv/:complex' => $complex_csv;
@@ -607,12 +605,6 @@ post '/api/:service_name/:section_name/:graph_name' => sub {
             rule => [
                 ['NOT_NULL','number is null'],
                 ['INT','number is not null']
-            ],
-        },
-        'datetime' => {
-            default => sub  { HTTP::Date::time2str(time) }
-            rule => [
-                [ sub { HTTP::Date::str2time($_[1]) } ,'datetime is not null']                
             ],
         },
     ]);
@@ -628,13 +620,9 @@ post '/api/:service_name/:section_name/:graph_name' => sub {
 
     my $ret = $self->data->update(
         $c->args->{service_name}, $c->args->{section_name}, $c->args->{graph_name},
-        $result->valid('number'), HTTP::Date::str2time($result->valid('datetime'))
+        $result->valid('number')
     );
     $c->render_json({ error => 0 });
 };
 
-
-
-
 1;
-
