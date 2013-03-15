@@ -154,11 +154,11 @@ sub delete_metrics {
 
 
 sub get_data {
-    my ($self, $id, $from, $to) = @_;
+    my ($self, $id) = @_;
     my @id = ref $id ? @$id : ($id);
     my $rows = $self->dbh->select_all(
-        'SELECT * FROM data WHERE metrics_id IN (?) AND (sequence BETWEEN ? AND ?) ORDER BY sequence ASC',
-        \@id, $from, $to
+        'SELECT * FROM data WHERE metrics_id IN (?) ORDER BY sequence ASC',
+        \@id
     );
     my @ret;
     for my $row ( @$rows ) {

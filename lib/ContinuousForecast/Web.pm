@@ -21,20 +21,6 @@ sub data {
     $self->{__data};
 }
 
-sub calc_term {
-    my $self = shift;
-    my %args = @_;
-
-    my $term   = $args{t};
-    my $from   = $args{from};
-    my $to     = $args{to};
-    my $offset = $args{offset};
-    my $period = $args{period};
-
-    $from = 1;
-    $to =  20;
-    return ($from,$to);
-}
 
 filter 'sidebar' => sub {
     my $app = shift;
@@ -101,36 +87,6 @@ get '/docs' => [qw/sidebar/] => sub {
 };
 
 my $metrics_validator = [
-    't' => {
-        default => 'c',
-        rule => [
-            [['CHOICE',qw/c range/],'invalid browse term'],
-        ],
-    },
-    'from' => {
-        default => 0,
-        rule => [
-            ['UINT', 'invalid from'],
-        ],
-    },
-    'period' => {
-        default => 0,
-        rule => [
-            ['UINT', 'invalid interval'],
-        ],
-    },
-    'offset' => {
-        default => 0,
-        rule => [
-            ['UINT', 'invalid offset'],
-        ],
-    },
-    'to' => {
-        default => 0,
-        rule => [
-            ['UINT', 'invalid to'],
-        ],
-    },
     'd' => {
         default => 0,
         rule => [
@@ -145,75 +101,50 @@ my $metrics_validator = [
     },
 ];
 
-sub _build_metrics_params {
-    my $result = shift;
-
-    my $term = $result->valid('t');
-    my @params;
-    push @params, 't', $term;
-    if ($term eq 'range') {
-        push @params, $_ => $result->valid($_) for qw/period offset/;
-    }
-    elsif ($term eq 'c') {
-        push @params, $_ => $result->valid($_) for qw/from to/;
-    }
-    \@params;
-}
-
 get '/list/:service_name/:section_name' => [qw/sidebar/] => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
     my $rows = $self->data->get_metricses(
         $c->args->{service_name}, $c->args->{section_name}
     );
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
     $c->render('list.tx',{
-        metricses => $rows, valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from, $to]),
+        metricses => $rows, valid => $result,
     });
 };
 
 get '/view/:service_name/:section_name/:graph_name' => [qw/sidebar get_metrics/] => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
     $c->render('list.tx', {
         metricses => [$c->stash->{metrics}],
-        valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from, $to]),
+        valid => $result,
     });
 };
 
 get '/view_complex/:service_name/:section_name/:graph_name' => [qw/sidebar get_complex/] => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
     $c->render('list.tx', {
         metricses => [$c->stash->{metrics}],
-        valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from, $to]),
+        valid => $result,
     });
 };
 
 get '/ifr/:service_name/:section_name/:graph_name' => [qw/get_metrics/] => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
     $c->render('ifr.tx', {
         metrics => $c->stash->{metrics},
-        valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from, $to]),
+        valid => $result,
     });
 };
 
 get '/ifr_complex/:service_name/:section_name/:graph_name' => [qw/get_complex/] => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
     $c->render('ifr_complex.tx', {
         metrics => $c->stash->{metrics},
-        valid => $result, metrics_params => _build_metrics_params($result),
-        date_window => encode_json([$from, $to]),
+        valid => $result,
     });
 };
 
@@ -225,7 +156,6 @@ get '/ifr/preview/' => sub {
 get '/ifr/preview/:complex' => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
 
     my @complex = split /:/, $c->args->{complex};
     my @colors;
@@ -236,9 +166,8 @@ get '/ifr/preview/:complex' => sub {
 
     $c->render('pifr.tx', {
         complex => $c->args->{complex},
-        valid => $result, metrics_params => _build_metrics_params($result),
+        valid => $result,
         colors => encode_json(\@colors),
-        date_window => encode_json([$from, $to]),
     });
 };
 
@@ -497,10 +426,8 @@ post '/delete_complex/:service_name/:section_name/:graph_name' => [qw/get_comple
 get '/csv/:service_name/:section_name/:graph_name' => [qw/get_metrics/] => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
     my ($rows,$opt) = $self->data->get_data(
         $c->stash->{metrics}->{id},
-        $from, $to
     );
     my $csv = sprintf("Date,/%s/%s/%s\n",$c->stash->{metrics}->{service_name},$c->stash->{metrics}->{section_name},$c->stash->{metrics}->{graph_name});
     foreach my $row ( @$rows ) {
@@ -521,7 +448,6 @@ get '/csv/:service_name/:section_name/:graph_name' => [qw/get_metrics/] => sub {
 my $complex_csv =  sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator($metrics_validator);
-    my ($from ,$to) = $self->calc_term( map {($_ =>  $result->valid($_))} qw/t from to period offset/);
 
     my @data;
     my @id;
@@ -541,7 +467,6 @@ my $complex_csv =  sub {
 
     my ($rows,$opt) = $self->data->get_data(
         [ map { $_->{id} } @data ],
-        $from, $to
     );
 
     my %date_group;
