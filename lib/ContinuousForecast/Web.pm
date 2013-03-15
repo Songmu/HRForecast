@@ -102,9 +102,9 @@ get '/docs' => [qw/sidebar/] => sub {
 
 my $metrics_validator = [
     't' => {
-        default => 'm',
+        default => 'c',
         rule => [
-            [['CHOICE',qw/w m y c range/],'invalid browse term'],
+            [['CHOICE',qw/c range/],'invalid browse term'],
         ],
     },
     'from' => {

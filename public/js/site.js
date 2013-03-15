@@ -34,7 +34,7 @@ function loadGraphs () {
     gdiv.data('csv'),
     {
       includeZero: true,
-      //dateWindow: [ Date.parse(gdiv.data('datewindow')[0]),Date.parse(gdiv.data('datewindow')[1]) ],
+      dateWindow: [ gdiv.data('datewindow')[0], gdiv.data('datewindow')[1] ],
       colors: gdiv.data('colors'),
       stackedGraph: gdiv.data('stack') ? true : false,
       drawPoints: false,
